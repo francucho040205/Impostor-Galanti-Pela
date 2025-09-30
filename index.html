@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>¿Quién es el impostor? - Online</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar">
+    <span>Dev by Castrismo</span>
+    <span style="float:right;">v 1.2.2</span>
+  </div>
+  <div class="center-outer">
+    <div class="center-inner" id="app">
+      <!-- CREA SALA / UNIRSE -->
+      <h1 class="section-title">Crea una sala</h1>
+      <form class="form-card" id="createRoomForm" autocomplete="off">
+        <input id="hostNameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
+        <button id="createRoomFinalBtn" type="submit">🚀 Crear sala</button>
+      </form>
+      <h2 class="section-subtitle">O unite a una con un código</h2>
+      <form class="form-card" id="joinRoomForm" autocomplete="off">
+        <input id="roomInput" type="text" placeholder="Código de sala" maxlength="8" required>
+        <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
+        <button id="joinBtn" type="submit">🔑 Unirse</button>
+      </form>
+      <!-- LOBBY -->
+      <div id="lobbyScreen" style="display:none;">
+        <div class="lobby-card">
+          <div class="lobby-header">
+            <div class="lobby-room-label">Código de sala</div>
+            <div id="lobbyRoomCode" class="lobby-room-code"></div>
+          </div>
+          <div class="lobby-title">Jugadores en la sala:</div>
+          <ul id="lobbyPlayers"></ul>
+          <div id="hostControls" style="display:none;">
+            <label for="impostorsSelect" style="margin-bottom: 4px; color:#6e7e8c;">Nº de impostores:</label>
+            <select id="impostorsSelect">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div class="lobby-title" style="margin-top:16px;">Tu nombre secreto a sortear</div>
+          <form id="nameSuggestForm" style="width:100%;display:flex;gap:8px;justify-content:center;">
+            <input id="suggestedNameInput" type="text" placeholder="Nombre secreto" maxlength="20" required style="flex:2;">
+            <button id="addNameBtn" type="submit" style="flex:1;background:#2176ff;">➕ Agregar</button>
+          </form>
+          <button id="startGameBtn" type="button" style="margin-top:20px; background:#188a61;">Iniciar partida</button>
+        </div>
+      </div>
+      <!-- TURNO DE HABLAR -->
+      <div id="talkScreen" style="display:none;">
+        <div class="form-card">
+          <h2 id="talkTitle"></h2>
+          <p id="talkInfo"></p>
+          <button id="talkDoneBtn" style="margin-top:18px;">Ya hablé</button>
+        </div>
+      </div>
+      <!-- VOTACIÓN -->
+      <div id="voteScreen" style="display:none;">
+        <div class="form-card">
+          <div id="roleBox" style="margin-bottom:20px;">
+            <span id="yourRoleText" class="role-text"></span>
+            <span id="secretWordBox" class="secret-word"></span>
+          </div>
+          <div class="lobby-title">¿Quién es el impostor?</div>
+          <div id="playersToVote" class="players-list"></div>
+          <button id="confirmVoteBtn" style="margin-top:18px;">Confirmar voto</button>
+        </div>
+      </div>
+      <!-- RESULTADOS -->
+      <div id="resultScreen" style="display:none;">
+        <div class="form-card">
+          <h2 id="resultTitle"></h2>
+          <p id="resultInfo"></p>
+          <button id="playAgainBtn">Jugar de nuevo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
