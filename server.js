@@ -44,11 +44,13 @@ io.on('connection', (socket) => {
         secret: null
       };
     }
-    if (rooms[room].players.some(p => p.name === name)) {
-      socket.emit('error', 'Ese nombre ya está en uso en esta sala.');
-      return;
+    // Si ya existe, actualiza socketId
+    let existing = rooms[room].players.find(p => p.name === name);
+    if (existing) {
+      existing.socketId = socket.id;
+    } else {
+      rooms[room].players.push({ name, socketId: socket.id });
     }
-    rooms[room].players.push({ name, socketId: socket.id });
     socket.join(room);
     emitLobbyUpdate(room);
   });
@@ -103,26 +105,9 @@ io.on('connection', (socket) => {
       }
     });
 
-    // TURNO DE HABLAR: Generar orden (impostor nunca primero ni segundo)
+    // TURNO DE HABLAR: Impos y inocentes mezclados completamente (impostor puede ir primero, segundo, etc)
     const vivos = sala.players.map(p => p.name);
-    let impostors = vivos.filter(name => sala.roles[name] === 'impostor');
-    let innocents = vivos.filter(name => sala.roles[name] === 'innocent');
-
-    innocents = innocents.sort(() => Math.random() - 0.5);
-    impostors = impostors.sort(() => Math.random() - 0.5);
-
-    let order = [];
-    if (innocents.length > 0) {
-      order.push(innocents[0]);
-      if (innocents.length > 1) {
-        order.push(innocents[1]);
-      } else if (innocents.length > 0 && impostors.length > 0) {
-        order.push(impostors[0]);
-        impostors = impostors.slice(1);
-      }
-    }
-    const resto = innocents.slice(2).concat(impostors);
-    order = order.concat(resto.sort(() => Math.random() - 0.5));
+    let order = vivos.sort(() => Math.random() - 0.5);
 
     talkOrders[room] = order;
     talkIndexes[room] = 0;
@@ -141,10 +126,8 @@ io.on('connection', (socket) => {
       const vivos = sala.players
         .map(p => p.name)
         .filter(name => !sala.eliminated.includes(name));
-      // Enviamos también info de eliminados para la votación
       io.in(room).emit("to_vote", vivos, sala.eliminated);
-      // Enviamos votos en vivo (reset)
-      io.in(room).emit("votes_update", sala.votes, vivos.length);
+      io.in(room).emit("votes_update", sala.votes, vivos.length, sala.eliminated, sala.roles);
     }
   });
 
@@ -153,16 +136,14 @@ io.on('connection', (socket) => {
     const sala = rooms[room];
     // Si el jugador está eliminado, ignora el voto
     if (sala.eliminated.includes(playerName)) return;
-    if (!sala.votes[playerName]) {
-      sala.votes[playerName] = target;
-    }
+    sala.votes[playerName] = target;
     const vivos = sala.players
       .map(p => p.name)
       .filter(name => !sala.eliminated.includes(name));
-    // Enviamos votos en vivo
-    io.in(room).emit("votes_update", sala.votes, vivos.length);
+    io.in(room).emit("votes_update", sala.votes, vivos.length, sala.eliminated, sala.roles);
 
     if (Object.keys(sala.votes).length >= vivos.length) {
+      // Conteo de votos
       const votos = {};
       Object.values(sala.votes).forEach(targetName => {
         if (!votos[targetName]) votos[targetName] = 0;
@@ -195,33 +176,20 @@ io.on('connection', (socket) => {
       if (impostoresVivos === 0) {
         io.in(room).emit('show_results', {
           title: "¡Inocentes ganan!",
-          info: `El impostor era ${eliminado}.`
+          info: `El impostor era ${eliminado}.`,
+          image: "https://images.githubusercontent.com/photo-4" // URL de imagen 4
         });
       } else if (inocentesVivos <= 1) {
         io.in(room).emit('show_results', {
           title: "¡Impostores ganan!",
-          info: `Sobrevivieron los impostores.`
+          info: `Sobrevivieron los impostores.`,
+          image: "https://images.githubusercontent.com/photo-5" // URL de imagen 5
         });
       } else {
         const vivosPlayers = sala.players
           .map(p => p.name)
           .filter(name => !sala.eliminated.includes(name));
-        let impostors = vivosPlayers.filter(name => sala.roles[name] === 'impostor');
-        let innocents = vivosPlayers.filter(name => sala.roles[name] === 'innocent');
-        innocents = innocents.sort(() => Math.random() - 0.5);
-        impostors = impostors.sort(() => Math.random() - 0.5);
-        let order = [];
-        if (innocents.length > 0) {
-          order.push(innocents[0]);
-          if (innocents.length > 1) {
-            order.push(innocents[1]);
-          } else if (innocents.length > 0 && impostors.length > 0) {
-            order.push(impostors[0]);
-            impostors = impostors.slice(1);
-          }
-        }
-        const resto = innocents.slice(2).concat(impostors);
-        order = order.concat(resto.sort(() => Math.random() - 0.5));
+        let order = vivosPlayers.sort(() => Math.random() - 0.5);
         talkOrders[room] = order;
         talkIndexes[room] = 0;
         io.in(room).emit("start_talk", { order });
