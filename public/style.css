@@ -26,7 +26,7 @@ body, html {
   overflow-x: hidden;
 }
 
-/* Fondo Nyan Cat animado - z-index bajo para que pase por detrás */
+/* Fondo animado con la foto rebotando por detrás */
 #nyancat-bg {
   position: fixed;
   z-index: 0;
@@ -35,23 +35,27 @@ body, html {
   overflow: hidden;
   pointer-events: none;
 }
-#nyancat-gif {
+#foto-rebotando {
   position: absolute;
-  width: 140px;
+  width: 180px;
   height: auto;
   top: 50%;
   left: 0;
-  animation: nyancat-move 16s linear infinite;
+  animation: foto-rebote 15s linear infinite;
+  border-radius: 18px;
+  box-shadow: 0 3px 24px #0007;
 }
-@keyframes nyancat-move {
-  0% { left: -140px; top: 10%; }
-  25% { left: 30vw; top: 25%; }
-  50% { left: 70vw; top: 60%; }
-  75% { left: 90vw; top: 30%; }
-  100% { left: 110vw; top: 10%; }
+@keyframes foto-rebote {
+  0% { left: -180px; top: 8%; }
+  20% { left: 20vw; top: 16%; }
+  35% { left: 45vw; top: 82%; }
+  50% { left: 75vw; top: 44%; }
+  70% { left: 92vw; top: 60%; }
+  85% { left: 65vw; top: 15%; }
+  100% { left: 110vw; top: 8%; }
 }
 
-/* Cajas de juego con z-index alto para que el Nyan Cat pase por atrás */
+/* Cajas de juego con z-index alto para que la foto pase por atrás */
 .center-outer, .center-inner, .form-card, .lobby-card, #chatBox, .topbar {
   position: relative;
   z-index: 2;
