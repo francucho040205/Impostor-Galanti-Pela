@@ -28,7 +28,6 @@ const talkDoneBtn = document.getElementById("talkDoneBtn");
 let talkRole = document.getElementById("talkRole");
 let talkSecret = document.getElementById("talkSecret");
 if (!talkRole) {
-  // Agregar los elementos si no existen
   const card = talkScreen.querySelector('.form-card');
   talkRole = document.createElement("div");
   talkRole.id = "talkRole";
@@ -55,6 +54,11 @@ const resultScreen = document.getElementById("resultScreen");
 const resultTitle = document.getElementById("resultTitle");
 const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
+
+// NUEVO: votos en vivo / eliminados
+let eliminatedPlayers = [];
+let votesInProgress = {};
+let totalVoters = 0;
 
 let isHost = false;
 let myRoom = "";
@@ -119,12 +123,11 @@ function showLobby(codigo, jugadores, host) {
   suggestedNameInput.value = "";
   suggestedNameInput.disabled = false;
   addNameBtn.disabled = false;
-  // Solo el host ve el botón de iniciar partida
   startGameBtn.style.display = host ? "" : "none";
 }
 socket.on("lobby_update", ({ room, players, hostName, impostors }) => {
   showLobby(room, players, myName === hostName);
-  isHost = (myName === hostName); // Actualiza si el host cambia
+  isHost = (myName === hostName);
   impostorsSelect.value = impostors || 1;
 });
 
@@ -214,7 +217,42 @@ socket.on("role_assigned", ({ role, secret }) => {
   secretWord = (typeof secret === "string") ? secret : "";
 });
 
-socket.on("to_vote", players => {
+// VOTOS EN VIVO Y ELIMINADOS
+socket.on("votes_update", (votes, total) => {
+  votesInProgress = votes;
+  totalVoters = total;
+  // Actualizar contador en pantalla si está en votación
+  if (voteScreen.style.display !== "none") {
+    let count = Object.keys(votesInProgress).length;
+    let votoBox = document.getElementById("votosEnVivo");
+    if (!votoBox) {
+      votoBox = document.createElement("div");
+      votoBox.id = "votosEnVivo";
+      votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
+      voteScreen.querySelector('.form-card').insertBefore(votoBox, voteScreen.querySelector('.form-card').firstChild);
+    }
+    votoBox.textContent = `Votos recibidos: ${count} de ${totalVoters}`;
+  }
+});
+
+socket.on("player_eliminated", (name) => {
+  // Mostrar cartel temporal
+  let cartel = document.createElement("div");
+  cartel.textContent = `¡${name} fue eliminado!`;
+  cartel.style = "position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e74c3c;color:#fff;padding:14px 28px;border-radius:16px;z-index:1000;font-size:1.3em;box-shadow:0 4px 16px rgba(0,0,0,0.12);";
+  document.body.appendChild(cartel);
+  setTimeout(()=>{cartel.remove();},2600);
+  if (!eliminatedPlayers.includes(name)) eliminatedPlayers.push(name);
+});
+
+socket.on("to_vote", (players, eliminated) => {
+  eliminatedPlayers = eliminated || [];
+  // Si el jugador está eliminado, mostrar mensaje y bloquear voto
+  if (eliminatedPlayers.includes(myName)) {
+    showOnly(voteScreen);
+    voteScreen.querySelector('.form-card').innerHTML = '<h2 style="color:#e74c3c">Te eliminaron</h2><p>No podés votar ni participar más.</p>';
+    return;
+  }
   showOnly(voteScreen);
   playersToVote.innerHTML = "";
   playersVotingList = players;
@@ -241,6 +279,16 @@ socket.on("to_vote", players => {
     secretWordBox.textContent = secretWord ? `"${secretWord}"` : "";
   }
   confirmVoteBtn.disabled = false;
+  // Votos en vivo box
+  let votoBox = document.getElementById("votosEnVivo");
+  if (!votoBox) {
+    votoBox = document.createElement("div");
+    votoBox.id = "votosEnVivo";
+    votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
+    voteScreen.querySelector('.form-card').insertBefore(votoBox, voteScreen.querySelector('.form-card').firstChild);
+  }
+  let count = votesInProgress ? Object.keys(votesInProgress).length : 0;
+  votoBox.textContent = `Votos recibidos: ${count} de ${players.length}`;
 });
 
 confirmVoteBtn.onclick = function() {
@@ -264,9 +312,11 @@ playAgainBtn.onclick = () => {
 };
 
 socket.on("restart", () => {
-  // Vuelve al lobby y restaura el botón de iniciar para el host
   socket.emit("join_room", { name: myName, room: myRoom });
   nameSuggested = false;
   talkOrder = [];
   talkIndex = 0;
+  eliminatedPlayers = [];
+  votesInProgress = {};
+  totalVoters = 0;
 });
