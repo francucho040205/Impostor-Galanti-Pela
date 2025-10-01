@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const rooms = {};
 const talkOrders = {};
 const talkIndexes = {};
-const chatHistory = {}; // NUEVO: historial de chat por sala
+const chatHistory = {}; // Historial de chat por sala
 
 function emitLobbyUpdate(room) {
   if (!rooms[room]) return;
@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
     socket.join(room);
     emitLobbyUpdate(room);
 
-    // Enviar el historial de chat si existe
+    // Enviar historial solo si está en partida/lobby
     if (chatHistory[room]) {
       socket.emit('chat_history', chatHistory[room]);
     }
@@ -125,8 +125,7 @@ io.on('connection', (socket) => {
     talkIndexes[room] = 0;
 
     io.in(room).emit("start_talk", { order });
-    // Limpia el chat en todos los clientes (opcional)
-    io.in(room).emit('chat_history', []);
+    io.in(room).emit('chat_history', []); // Limpia chat en clientes
   });
 
   socket.on("done_talk", ({ room }) => {
@@ -194,7 +193,7 @@ io.on('connection', (socket) => {
         .filter(name => sala.roles[name] === 'impostor' && !sala.eliminated.includes(name)).length;
       const inocentesVivos = sala.players
         .map(p => p.name)
-        .filter(name => sala.roles[name] === 'innocent' && !sala.eliminated.includes(name)).length;
+        .filter(name => sala.roles[p.name] === 'innocent' && !sala.eliminated.includes(name)).length;
 
       sala.votes = {};
 
@@ -222,7 +221,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // CHAT (guarda historial en la partida)
+  // CHAT con historial por partida
   socket.on('chat_message', ({ room, name, text }) => {
     if (room && name && text) {
       if (!chatHistory[room]) chatHistory[room] = [];
