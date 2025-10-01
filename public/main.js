@@ -7,6 +7,9 @@ const hostNameInput = document.getElementById("hostNameInput");
 const roomInput = document.getElementById("roomInput");
 const nameInput = document.getElementById("nameInput");
 
+const titleCreate = document.getElementById("titleCreate");
+const subtitleJoin = document.getElementById("subtitleJoin");
+
 // -- Lobby
 const lobbyScreen = document.getElementById("lobbyScreen");
 const lobbyRoomCode = document.getElementById("lobbyRoomCode");
@@ -55,6 +58,12 @@ const resultTitle = document.getElementById("resultTitle");
 const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
 
+// CHAT
+const chatBox = document.getElementById("chatBox");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+
 // Estado votos, eliminados, sugerencias
 let eliminatedPlayers = [];
 let votesInProgress = {};
@@ -72,11 +81,31 @@ let secretWord = null;
 let playersVotingList = [];
 let selectedVote = null;
 
+// Oculta los títulos de la pantalla inicial al entrar a la partida
+function ocultarTitulosInicio() {
+  if (titleCreate) titleCreate.style.display = "none";
+  if (subtitleJoin) subtitleJoin.style.display = "none";
+  if (createRoomForm) createRoomForm.style.display = "none";
+  if (joinRoomForm) joinRoomForm.style.display = "none";
+}
+function mostrarTitulosInicio() {
+  if (titleCreate) titleCreate.style.display = "";
+  if (subtitleJoin) subtitleJoin.style.display = "";
+  if (createRoomForm) createRoomForm.style.display = "";
+  if (joinRoomForm) joinRoomForm.style.display = "";
+}
+
 function showOnly(id) {
   [
     createRoomForm, joinRoomForm, lobbyScreen, voteScreen, resultScreen, talkScreen
   ].forEach(el => el.style.display = "none");
   if (id) id.style.display = "flex";
+  // Oculta títulos si no estamos en la pantalla de inicio
+  if (id === createRoomForm || id === joinRoomForm) {
+    mostrarTitulosInicio();
+  } else {
+    ocultarTitulosInicio();
+  }
 }
 
 // Crear sala
@@ -358,3 +387,22 @@ socket.on("restart", () => {
   rolesForVotes = {};
   fueEliminadoEstaPartida = false;
 });
+
+// --- CHAT ---
+chatForm.addEventListener("submit", function(e) {
+  e.preventDefault();
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  socket.emit("chat_message", { room: myRoom, name: myName, text: msg });
+  chatInput.value = "";
+});
+socket.on("chat_message", ({ name, text }) => {
+  addChatMsg(name, text);
+});
+function addChatMsg(name, text) {
+  const div = document.createElement("div");
+  div.className = "chatMsg";
+  div.innerHTML = `<span class="chatName">${name}:</span> <span class="chatText">${text}</span>`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
