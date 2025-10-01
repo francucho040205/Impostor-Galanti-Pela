@@ -20,7 +20,8 @@ function emitLobbyUpdate(room) {
     room,
     players: rooms[room].players.map(p => p.name),
     hostName: rooms[room].hostName,
-    impostors: rooms[room].impostors
+    impostors: rooms[room].impostors,
+    suggestions: rooms[room].suggestions // <--- agrega sugerencias para el lobby
   });
 }
 
@@ -66,6 +67,7 @@ io.on('connection', (socket) => {
   socket.on('suggest_secret', ({ suggestion, room }) => {
     if (!rooms[room]) return;
     rooms[room].suggestions[playerName] = suggestion;
+    emitLobbyUpdate(room);
   });
 
   socket.on('start_game', ({ room }) => {
@@ -173,7 +175,7 @@ io.on('connection', (socket) => {
         talkIndexes[room] = 0;
         setTimeout(() => {
           io.in(room).emit("start_talk", { order });
-        }, 2300); // Esperar un poco para mostrar el cartel de empate
+        }, 2300);
         return;
       }
 
@@ -181,7 +183,6 @@ io.on('connection', (socket) => {
       const eliminado = eliminados[0];
       sala.eliminated.push(eliminado);
 
-      // Mensaje en vivo anunciando a quién echaron
       io.in(room).emit("player_eliminated", eliminado);
 
       const impostoresVivos = sala.players
