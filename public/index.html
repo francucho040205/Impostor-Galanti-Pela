@@ -6,6 +6,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- FONDO NYAN CAT ANIMADO -->
+  <div id="nyancat-bg">
+    <img src="https://media.giphy.com/media/sIIhZliB2McAo/giphy.gif" id="nyancat-gif" alt="Nyan Cat" />
+  </div>
   <div class="topbar">
     <span>Dev by Castrismo</span>
     <span style="float:right;">v 1.2.2</span>
@@ -13,12 +17,12 @@
   <div class="center-outer">
     <div class="center-inner" id="app">
       <!-- CREA SALA / UNIRSE -->
-      <h1 class="section-title">Crea una sala</h1>
+      <h1 class="section-title" id="titleCreate">Crea una sala</h1>
+      <h2 class="section-subtitle" id="subtitleJoin">O unite a una con un código</h2>
       <form class="form-card" id="createRoomForm" autocomplete="off">
         <input id="hostNameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
         <button id="createRoomFinalBtn" type="submit">🚀 Crear sala</button>
       </form>
-      <h2 class="section-subtitle">O unite a una con un código</h2>
       <form class="form-card" id="joinRoomForm" autocomplete="off">
         <input id="roomInput" type="text" placeholder="Código de sala" maxlength="8" required>
         <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
@@ -78,6 +82,15 @@
         </div>
       </div>
     </div>
+  </div>
+  <!-- CHAT EN ESQUINA -->
+  <div id="chatBox">
+    <div id="chatHeader">Chat</div>
+    <div id="chatMessages"></div>
+    <form id="chatForm">
+      <input id="chatInput" type="text" maxlength="200" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button type="submit">Enviar</button>
+    </form>
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
