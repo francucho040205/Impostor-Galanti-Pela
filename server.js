@@ -160,6 +160,24 @@ io.on('connection', (socket) => {
           eliminados.push(name);
         }
       }
+      // Empate: NO eliminar a nadie, mostrar mensaje especial
+      if (eliminados.length > 1) {
+        io.in(room).emit("vote_tie", eliminados);
+        sala.votes = {};
+        // Nueva ronda de hablar con los mismos vivos
+        const vivosPlayers = sala.players
+          .map(p => p.name)
+          .filter(name => !sala.eliminated.includes(name));
+        let order = vivosPlayers.sort(() => Math.random() - 0.5);
+        talkOrders[room] = order;
+        talkIndexes[room] = 0;
+        setTimeout(() => {
+          io.in(room).emit("start_talk", { order });
+        }, 2300); // Esperar un poco para mostrar el cartel de empate
+        return;
+      }
+
+      // Eliminación normal
       const eliminado = eliminados[0];
       sala.eliminated.push(eliminado);
 
