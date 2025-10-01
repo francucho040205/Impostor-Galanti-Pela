@@ -24,7 +24,7 @@ const talkTitle = document.getElementById("talkTitle");
 const talkInfo = document.getElementById("talkInfo");
 const talkDoneBtn = document.getElementById("talkDoneBtn");
 
-// NUEVO: rol y palabra secreta en hablar
+// -- Rol y palabra secreta en hablar
 let talkRole = document.getElementById("talkRole");
 let talkSecret = document.getElementById("talkSecret");
 if (!talkRole) {
@@ -55,12 +55,13 @@ const resultTitle = document.getElementById("resultTitle");
 const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
 
-// NUEVO: votos en vivo / eliminados / cartel eliminado
+// Estado votos, eliminados, sugerencias
 let eliminatedPlayers = [];
 let votesInProgress = {};
 let totalVoters = 0;
 let rolesForVotes = {};
-let fueEliminadoEstaPartida = false; // NUEVO: solo dura una partida
+let fueEliminadoEstaPartida = false;
+let secretSuggestions = {};
 
 let isHost = false;
 let myRoom = "";
@@ -91,7 +92,7 @@ createRoomForm.addEventListener("submit", function(e){
   myName = nombre;
   isHost = true;
   socket.emit("join_room", { name: nombre, room: codigo, impostors: 1 });
-  showLobby(codigo, [nombre], true);
+  showLobby(codigo, [nombre], true, {});
 });
 
 // Unirse a sala
@@ -109,14 +110,19 @@ joinRoomForm.addEventListener("submit", function(e){
   socket.emit("join_room", { name: nombre, room: codigo });
 });
 
-// Mostrar lobby
-function showLobby(codigo, jugadores, host) {
+// Mostrar lobby (con color verde si ya sugirió nombre secreto)
+function showLobby(codigo, jugadores, host, suggestions) {
   showOnly(lobbyScreen);
   lobbyRoomCode.textContent = codigo;
   lobbyPlayers.innerHTML = "";
+  secretSuggestions = suggestions || {};
   jugadores.forEach(j => {
     const li = document.createElement("li");
     li.textContent = j;
+    if (secretSuggestions[j]) {
+      li.style.color = "#10d084";
+      li.style.fontWeight = "bold";
+    }
     lobbyPlayers.appendChild(li);
   });
   hostControls.style.display = host ? "" : "none";
@@ -127,8 +133,8 @@ function showLobby(codigo, jugadores, host) {
   addNameBtn.disabled = false;
   startGameBtn.style.display = host ? "" : "none";
 }
-socket.on("lobby_update", ({ room, players, hostName, impostors }) => {
-  showLobby(room, players, myName === hostName);
+socket.on("lobby_update", ({ room, players, hostName, impostors, suggestions }) => {
+  showLobby(room, players, myName === hostName, suggestions);
   isHost = (myName === hostName);
   impostorsSelect.value = impostors || 1;
 });
@@ -169,7 +175,7 @@ socket.on("start_talk", ({ order }) => {
   talkOrder = order;
   talkIndex = 0;
   eliminatedPlayers = [];
-  fueEliminadoEstaPartida = false; // RESET al iniciar partida
+  fueEliminadoEstaPartida = false;
   advanceTalkTurn();
 });
 
@@ -177,7 +183,6 @@ function advanceTalkTurn() {
   const currentSpeaker = talkOrder[talkIndex];
   showOnly(talkScreen);
 
-  // Mostrar rol y secreto arriba del cartel
   if (myRole === "impostor") {
     talkRole.textContent = "IMPOSTOR";
     talkRole.style.color = "#e74c3c";
@@ -226,7 +231,6 @@ socket.on("votes_update", (votes, total, eliminated, roles) => {
   totalVoters = total;
   rolesForVotes = roles || {};
   eliminatedPlayers = eliminated || [];
-  // Actualizar contador en pantalla si está en votación
   if (voteScreen.style.display !== "none") {
     let formCard = voteScreen.querySelector('.form-card');
     let votoBox = document.getElementById("votosEnVivo");
@@ -236,7 +240,6 @@ socket.on("votes_update", (votes, total, eliminated, roles) => {
       votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
       formCard.insertBefore(votoBox, formCard.firstChild);
     }
-    // Mostrar recuento por jugador (todos del mismo color)
     let votosPorJugadorHTML = '';
     if (playersVotingList && playersVotingList.length > 0) {
       playersVotingList.forEach(name => {
@@ -271,7 +274,6 @@ socket.on("vote_tie", (empatados) => {
 
 socket.on("to_vote", (players, eliminated) => {
   eliminatedPlayers = eliminated || [];
-  // SOLO bloquea si fue eliminado esta partida
   if (fueEliminadoEstaPartida) {
     showOnly(voteScreen);
     let formCard = voteScreen.querySelector('.form-card');
@@ -304,7 +306,6 @@ socket.on("to_vote", (players, eliminated) => {
     secretWordBox.textContent = secretWord ? `"${secretWord}"` : "";
   }
   confirmVoteBtn.disabled = false;
-  // Votos en vivo box
   let formCard = voteScreen.querySelector('.form-card');
   let votoBox = document.getElementById("votosEnVivo");
   if (!votoBox) {
@@ -355,5 +356,5 @@ socket.on("restart", () => {
   votesInProgress = {};
   totalVoters = 0;
   rolesForVotes = {};
-  fueEliminadoEstaPartida = false; // RESET al reiniciar
+  fueEliminadoEstaPartida = false;
 });
