@@ -23,6 +23,23 @@ const talkScreen = document.getElementById("talkScreen");
 const talkTitle = document.getElementById("talkTitle");
 const talkInfo = document.getElementById("talkInfo");
 const talkDoneBtn = document.getElementById("talkDoneBtn");
+
+// NUEVO: rol y palabra secreta en hablar
+let talkRole = document.getElementById("talkRole");
+let talkSecret = document.getElementById("talkSecret");
+if (!talkRole) {
+  // Agregar los elementos si no existen
+  const card = talkScreen.querySelector('.form-card');
+  talkRole = document.createElement("div");
+  talkRole.id = "talkRole";
+  talkRole.style = "font-weight:bold; font-size:1.2em; margin-bottom:4px;";
+  card.insertBefore(talkRole, card.firstChild);
+  talkSecret = document.createElement("div");
+  talkSecret.id = "talkSecret";
+  talkSecret.style = "color:#10d084; font-size:1em; margin-bottom:12px;";
+  card.insertBefore(talkSecret, talkRole.nextSibling);
+}
+
 let talkOrder = [];
 let talkIndex = 0;
 
@@ -152,6 +169,21 @@ socket.on("start_talk", ({ order }) => {
 function advanceTalkTurn() {
   const currentSpeaker = talkOrder[talkIndex];
   showOnly(talkScreen);
+
+  // Mostrar rol y secreto arriba del cartel
+  if (myRole === "impostor") {
+    talkRole.textContent = "IMPOSTOR";
+    talkRole.style.color = "#e74c3c";
+    talkSecret.textContent = "";
+  } else if (myRole === "innocent") {
+    talkRole.textContent = "INOCENTE";
+    talkRole.style.color = "#10d084";
+    talkSecret.textContent = secretWord ? `Palabra secreta: "${secretWord}"` : "";
+  } else {
+    talkRole.textContent = "";
+    talkSecret.textContent = "";
+  }
+
   if (myName === currentSpeaker) {
     talkTitle.textContent = "¡Ahora te toca hablar!";
     talkInfo.textContent = "Habla y, cuando termines, pulsa el botón.";
@@ -234,7 +266,6 @@ playAgainBtn.onclick = () => {
 socket.on("restart", () => {
   // Vuelve al lobby y restaura el botón de iniciar para el host
   socket.emit("join_room", { name: myName, room: myRoom });
-  // El evento lobby_update se disparará y llamará a showLobby restaurando la UI correctamente
   nameSuggested = false;
   talkOrder = [];
   talkIndex = 0;
