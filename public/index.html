@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>¿Quién es el impostor? - Online</title>
+  <title>¡Galanti esta cada día más pelado!</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,23 +11,29 @@
     <img src="/img/foto-fondo.jpg" id="foto-rebotando" alt="Fondo animado" />
   </div>
   <div class="topbar">
-    <span>Dev by Castrismo</span>
+    <span>Dev by Cancer Team</span>
     <span style="float:right;">v 1.2.2</span>
   </div>
   <div class="center-outer">
     <div class="center-inner" id="app">
-      <!-- CREA SALA / UNIRSE -->
+      <!-- CREA SALA / UNIRSE - Nuevo layout -->
       <h1 class="section-title" id="titleCreate">Crea una sala</h1>
-      <h2 class="section-subtitle" id="subtitleJoin">O unite a una con un código</h2>
-      <form class="form-card" id="createRoomForm" autocomplete="off">
-        <input id="hostNameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
-        <button id="createRoomFinalBtn" type="submit">🚀 Crear sala</button>
-      </form>
-      <form class="form-card" id="joinRoomForm" autocomplete="off">
-        <input id="roomInput" type="text" placeholder="Código de sala" maxlength="8" required>
-        <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
-        <button id="joinBtn" type="submit">🔑 Unirse</button>
-      </form>
+      <h2 class="section-subtitle" id="subtitleJoin" style="margin-bottom:32px;">O unite a una con un código</h2>
+      <div style="display: flex; flex-direction: column; align-items: center; gap:32px;">
+        <form class="form-card" id="createRoomForm" autocomplete="off" style="margin-bottom:0;">
+          <input id="hostNameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
+          <button id="createRoomFinalBtn" type="submit" style="background:#43a047; color:#fff; margin-top:16px;">
+            🚀 Crear sala
+          </button>
+        </form>
+        <form class="form-card" id="joinRoomForm" autocomplete="off" style="margin-bottom:0;">
+          <input id="roomInput" type="text" placeholder="Código de sala" maxlength="8" required>
+          <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
+          <button id="joinBtn" type="submit" style="background:#1e88e5; color:#fff; margin-top:16px;">
+            🗝️ Unirse
+          </button>
+        </form>
+      </div>
       <!-- LOBBY -->
       <div id="lobbyScreen" style="display:none;">
         <div class="lobby-card">
