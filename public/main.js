@@ -55,11 +55,12 @@ const resultTitle = document.getElementById("resultTitle");
 const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
 
-// NUEVO: votos en vivo / eliminados
+// NUEVO: votos en vivo / eliminados / cartel eliminado
 let eliminatedPlayers = [];
 let votesInProgress = {};
 let totalVoters = 0;
 let rolesForVotes = {};
+let fueEliminadoEstaPartida = false; // NUEVO: solo dura una partida
 
 let isHost = false;
 let myRoom = "";
@@ -168,6 +169,7 @@ socket.on("start_talk", ({ order }) => {
   talkOrder = order;
   talkIndex = 0;
   eliminatedPlayers = [];
+  fueEliminadoEstaPartida = false; // RESET al iniciar partida
   advanceTalkTurn();
 });
 
@@ -240,7 +242,7 @@ socket.on("votes_update", (votes, total, eliminated, roles) => {
       playersVotingList.forEach(name => {
         let count = 0;
         Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
-        let color = "#fff"; // Todos los nombres en blanco
+        let color = "#fff";
         votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
       });
     }
@@ -256,11 +258,21 @@ socket.on("player_eliminated", (name) => {
   document.body.appendChild(cartel);
   setTimeout(()=>{cartel.remove();},2600);
   if (!eliminatedPlayers.includes(name)) eliminatedPlayers.push(name);
+  if (name === myName) fueEliminadoEstaPartida = true;
+});
+
+socket.on("vote_tie", (empatados) => {
+  let cartel = document.createElement("div");
+  cartel.textContent = `¡Empate! No se eliminó a nadie`;
+  cartel.style = "position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2176ff;color:#fff;padding:14px 28px;border-radius:16px;z-index:1000;font-size:1.3em;box-shadow:0 4px 16px rgba(0,0,0,0.12);";
+  document.body.appendChild(cartel);
+  setTimeout(()=>{cartel.remove();},2300);
 });
 
 socket.on("to_vote", (players, eliminated) => {
   eliminatedPlayers = eliminated || [];
-  if (eliminatedPlayers.includes(myName)) {
+  // SOLO bloquea si fue eliminado esta partida
+  if (fueEliminadoEstaPartida) {
     showOnly(voteScreen);
     let formCard = voteScreen.querySelector('.form-card');
     formCard.innerHTML = '<h2 style="color:#e74c3c">Te eliminaron</h2><p>No podés votar ni participar más.</p>';
@@ -307,7 +319,7 @@ socket.on("to_vote", (players, eliminated) => {
     playersVotingList.forEach(name => {
       let count = 0;
       Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
-      let color = "#fff"; // Todos los nombres en blanco
+      let color = "#fff";
       votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
     });
   }
@@ -343,4 +355,5 @@ socket.on("restart", () => {
   votesInProgress = {};
   totalVoters = 0;
   rolesForVotes = {};
+  fueEliminadoEstaPartida = false; // RESET al reiniciar
 });
