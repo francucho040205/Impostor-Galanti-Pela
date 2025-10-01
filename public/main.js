@@ -167,7 +167,7 @@ startGameBtn.onclick = function() {
 socket.on("start_talk", ({ order }) => {
   talkOrder = order;
   talkIndex = 0;
-  eliminatedPlayers = []; // RESETEA los eliminados al comenzar una nueva partida
+  eliminatedPlayers = [];
   advanceTalkTurn();
 });
 
@@ -219,7 +219,6 @@ socket.on("role_assigned", ({ role, secret }) => {
   secretWord = (typeof secret === "string") ? secret : "";
 });
 
-// VOTOS EN VIVO Y ELIMINADOS
 socket.on("votes_update", (votes, total, eliminated, roles) => {
   votesInProgress = votes;
   totalVoters = total;
@@ -235,13 +234,13 @@ socket.on("votes_update", (votes, total, eliminated, roles) => {
       votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
       formCard.insertBefore(votoBox, formCard.firstChild);
     }
-    // Mostrar recuento por jugador
+    // Mostrar recuento por jugador (todos del mismo color)
     let votosPorJugadorHTML = '';
     if (playersVotingList && playersVotingList.length > 0) {
       playersVotingList.forEach(name => {
         let count = 0;
         Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
-        let color = (rolesForVotes && rolesForVotes[name] === "impostor") ? "#e74c3c" : "#10d084";
+        let color = "#fff"; // Todos los nombres en blanco
         votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
       });
     }
@@ -308,7 +307,7 @@ socket.on("to_vote", (players, eliminated) => {
     playersVotingList.forEach(name => {
       let count = 0;
       Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
-      let color = (rolesForVotes && rolesForVotes[name] === "impostor") ? "#e74c3c" : "#10d084";
+      let color = "#fff"; // Todos los nombres en blanco
       votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
     });
   }
