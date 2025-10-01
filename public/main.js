@@ -59,6 +59,7 @@ const playAgainBtn = document.getElementById("playAgainBtn");
 let eliminatedPlayers = [];
 let votesInProgress = {};
 let totalVoters = 0;
+let rolesForVotes = {};
 
 let isHost = false;
 let myRoom = "";
@@ -218,25 +219,37 @@ socket.on("role_assigned", ({ role, secret }) => {
 });
 
 // VOTOS EN VIVO Y ELIMINADOS
-socket.on("votes_update", (votes, total) => {
+socket.on("votes_update", (votes, total, eliminated, roles) => {
   votesInProgress = votes;
   totalVoters = total;
+  rolesForVotes = roles || {};
+  eliminatedPlayers = eliminated || [];
   // Actualizar contador en pantalla si está en votación
   if (voteScreen.style.display !== "none") {
-    let count = Object.keys(votesInProgress).length;
+    let formCard = voteScreen.querySelector('.form-card');
     let votoBox = document.getElementById("votosEnVivo");
     if (!votoBox) {
       votoBox = document.createElement("div");
       votoBox.id = "votosEnVivo";
       votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
-      voteScreen.querySelector('.form-card').insertBefore(votoBox, voteScreen.querySelector('.form-card').firstChild);
+      formCard.insertBefore(votoBox, formCard.firstChild);
     }
-    votoBox.textContent = `Votos recibidos: ${count} de ${totalVoters}`;
+    // Mostrar recuento por jugador
+    let votosPorJugadorHTML = '';
+    if (playersVotingList && playersVotingList.length > 0) {
+      playersVotingList.forEach(name => {
+        let count = 0;
+        Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
+        let color = (rolesForVotes && rolesForVotes[name] === "impostor") ? "#e74c3c" : "#10d084";
+        votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
+      });
+    }
+    let totalCount = Object.keys(votesInProgress).length;
+    votoBox.innerHTML = `Votos recibidos: ${totalCount} de ${totalVoters}<br>${votosPorJugadorHTML}`;
   }
 });
 
 socket.on("player_eliminated", (name) => {
-  // Mostrar cartel temporal
   let cartel = document.createElement("div");
   cartel.textContent = `¡${name} fue eliminado!`;
   cartel.style = "position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e74c3c;color:#fff;padding:14px 28px;border-radius:16px;z-index:1000;font-size:1.3em;box-shadow:0 4px 16px rgba(0,0,0,0.12);";
@@ -247,10 +260,10 @@ socket.on("player_eliminated", (name) => {
 
 socket.on("to_vote", (players, eliminated) => {
   eliminatedPlayers = eliminated || [];
-  // Si el jugador está eliminado, mostrar mensaje y bloquear voto
   if (eliminatedPlayers.includes(myName)) {
     showOnly(voteScreen);
-    voteScreen.querySelector('.form-card').innerHTML = '<h2 style="color:#e74c3c">Te eliminaron</h2><p>No podés votar ni participar más.</p>';
+    let formCard = voteScreen.querySelector('.form-card');
+    formCard.innerHTML = '<h2 style="color:#e74c3c">Te eliminaron</h2><p>No podés votar ni participar más.</p>';
     return;
   }
   showOnly(voteScreen);
@@ -280,15 +293,25 @@ socket.on("to_vote", (players, eliminated) => {
   }
   confirmVoteBtn.disabled = false;
   // Votos en vivo box
+  let formCard = voteScreen.querySelector('.form-card');
   let votoBox = document.getElementById("votosEnVivo");
   if (!votoBox) {
     votoBox = document.createElement("div");
     votoBox.id = "votosEnVivo";
     votoBox.style = "margin-bottom:10px; font-size:1.1em; color:#2176ff;";
-    voteScreen.querySelector('.form-card').insertBefore(votoBox, voteScreen.querySelector('.form-card').firstChild);
+    formCard.insertBefore(votoBox, formCard.firstChild);
   }
-  let count = votesInProgress ? Object.keys(votesInProgress).length : 0;
-  votoBox.textContent = `Votos recibidos: ${count} de ${players.length}`;
+  let totalCount = votesInProgress ? Object.keys(votesInProgress).length : 0;
+  let votosPorJugadorHTML = '';
+  if (playersVotingList && playersVotingList.length > 0) {
+    playersVotingList.forEach(name => {
+      let count = 0;
+      Object.values(votesInProgress).forEach(v => { if (v === name) count++; });
+      let color = (rolesForVotes && rolesForVotes[name] === "impostor") ? "#e74c3c" : "#10d084";
+      votosPorJugadorHTML += `<span style="margin-right:12px;"><b style="color:${color}">${name}</b>: ${count}</span>`;
+    });
+  }
+  votoBox.innerHTML = `Votos recibidos: ${totalCount} de ${players.length}<br>${votosPorJugadorHTML}`;
 });
 
 confirmVoteBtn.onclick = function() {
@@ -301,9 +324,9 @@ confirmVoteBtn.onclick = function() {
   socket.emit("vote", { target: selectedVote, room: myRoom });
 };
 
-socket.on("show_results", ({ title, info }) => {
+socket.on("show_results", ({ title, info, image }) => {
   showOnly(resultScreen);
-  resultTitle.textContent = title;
+  resultTitle.innerHTML = image ? `<img src="${image}" style="max-width:420px;max-height:180px;margin-bottom:12px;border-radius:14px;"><br>${title}` : title;
   resultInfo.textContent = info;
 });
 
@@ -319,4 +342,5 @@ socket.on("restart", () => {
   eliminatedPlayers = [];
   votesInProgress = {};
   totalVoters = 0;
+  rolesForVotes = {};
 });
