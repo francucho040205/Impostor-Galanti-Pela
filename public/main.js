@@ -167,6 +167,7 @@ startGameBtn.onclick = function() {
 socket.on("start_talk", ({ order }) => {
   talkOrder = order;
   talkIndex = 0;
+  eliminatedPlayers = []; // RESETEA los eliminados al comenzar una nueva partida
   advanceTalkTurn();
 });
 
