@@ -73,6 +73,10 @@ io.on('connection', (socket) => {
     if (rooms[room].hostSocketId !== socket.id) return;
     const sala = rooms[room];
 
+    // RESET DE ELIMINADOS Y VOTOS
+    sala.eliminated = [];
+    sala.votes = {};
+
     // Asignar roles
     let playerCount = sala.players.length;
     let impostorCount = Math.max(1, Math.min(sala.impostors, playerCount - 1));
@@ -94,8 +98,6 @@ io.on('connection', (socket) => {
       : "";
 
     sala.secret = secret;
-    sala.eliminated = [];
-    sala.votes = {};
 
     sala.players.forEach(p => {
       if (sala.roles[p.name] === 'impostor') {
@@ -105,7 +107,7 @@ io.on('connection', (socket) => {
       }
     });
 
-    // TURNO DE HABLAR: Impos y inocentes mezclados completamente (impostor puede ir primero, segundo, etc)
+    // TURNO DE HABLAR: Impos y inocentes mezclados completamente
     const vivos = sala.players.map(p => p.name);
     let order = vivos.sort(() => Math.random() - 0.5);
 
@@ -177,13 +179,13 @@ io.on('connection', (socket) => {
         io.in(room).emit('show_results', {
           title: "¡Inocentes ganan!",
           info: `El impostor era ${eliminado}.`,
-          image: "https://images.githubusercontent.com/photo-4" // URL de imagen 4
+          image: "/img/victoria-inocentes.jpg"
         });
       } else if (inocentesVivos <= 1) {
         io.in(room).emit('show_results', {
           title: "¡Impostores ganan!",
           info: `Sobrevivieron los impostores.`,
-          image: "https://images.githubusercontent.com/photo-5" // URL de imagen 5
+          image: "/img/victoria-impostores.jpg"
         });
       } else {
         const vivosPlayers = sala.players
