@@ -13,8 +13,10 @@
   --input-border: #353550;
 }
 
-/* Fondo Nyan Cat animado */
-body {
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
   background: var(--bg-main);
   color: var(--text-main);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -23,6 +25,8 @@ body {
   position: relative;
   overflow-x: hidden;
 }
+
+/* Fondo Nyan Cat animado - z-index bajo para que pase por detrás */
 #nyancat-bg {
   position: fixed;
   z-index: 0;
@@ -47,57 +51,68 @@ body {
   100% { left: 110vw; top: 10%; }
 }
 
+/* Cajas de juego con z-index alto para que el Nyan Cat pase por atrás */
+.center-outer, .center-inner, .form-card, .lobby-card, #chatBox, .topbar {
+  position: relative;
+  z-index: 2;
+}
+
 /* Chat en la esquina */
 #chatBox {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  width: 280px;
-  max-height: 360px;
+  width: 300px;
+  max-height: 370px;
   background: var(--panel);
   border-radius: 18px;
   box-shadow: 0 2px 18px #0007;
-  padding: 9px 9px 12px 9px;
+  padding: 10px 12px 14px 12px;
   display: flex;
   flex-direction: column;
   z-index: 4000;
 }
+#chatBox { display: none; }
 #chatHeader {
   font-weight: bold;
   color: var(--accent);
   font-size: 1.1em;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
   padding-bottom: 4px;
   border-bottom: 1px solid var(--border);
   text-align: left;
+  letter-spacing: 1px;
 }
 #chatMessages {
   flex: 1;
   overflow-y: auto;
-  font-size: 0.97em;
-  margin-bottom: 7px;
-  max-height: 180px;
+  font-size: 1em;
+  margin-bottom: 8px;
+  max-height: 190px;
+  background: #181824;
+  border-radius: 8px;
+  padding: 7px 8px;
 }
 .chatMsg {
   margin-bottom: 5px;
   word-break: break-word;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1em;
 }
 .chatName {
-  color: var(--accent);
   font-weight: bold;
   margin-right: 6px;
+  color: var(--accent);
 }
-.chatText {
-  color: var(--text-main);
-}
+.chatText { color: var(--text-main); }
 #chatForm {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   margin-top: 4px;
 }
 #chatInput {
   flex: 1;
-  padding: 7px 8px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 2px solid var(--input-border);
   background: var(--input-bg);
@@ -109,32 +124,24 @@ body {
   border: 2px solid var(--accent);
 }
 #chatForm button {
-  padding: 7px 12px;
+  padding: 8px 18px;
   border-radius: 8px;
   border: none;
-  background: var(--accent);
-  color: var(--text-main);
+  background: #b95cff;
+  color: #fff;
   font-weight: bold;
   font-size: 1em;
   cursor: pointer;
   transition: background 0.13s;
+  margin-left: 0;
+  margin-right: 0;
+  letter-spacing: 1px;
 }
 #chatForm button:hover {
-  background: var(--accent-hover);
+  background: #8922e6;
 }
 
-/* Usa Helvetica para todo el sitio */
-html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: var(--bg-main);
-  color: var(--text-main);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-}
-
+/* Topbar, títulos, subtítulos etc */
 .topbar {
   width: 100vw;
   background: var(--panel);
@@ -148,14 +155,12 @@ html {
   border-bottom: 1px solid var(--border);
   text-transform: none;
 }
-
 .center-outer {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .center-inner {
   width: 100%;
   max-width: 600px;
@@ -163,7 +168,6 @@ html {
   flex-direction: column;
   align-items: center;
 }
-
 .section-title,
 .section-subtitle,
 .lobby-title,
@@ -181,7 +185,6 @@ select,
   font-weight: 700;
   letter-spacing: 1.5px;
 }
-
 .section-title {
   color: var(--accent);
   font-size: 2.5rem;
@@ -189,7 +192,6 @@ select,
   text-align: center;
   letter-spacing: 2px;
 }
-
 .section-subtitle {
   color: var(--text-secondary);
   font-size: 2rem;
@@ -197,7 +199,6 @@ select,
   text-align: center;
   letter-spacing: 2px;
 }
-
 .form-card, .lobby-card {
   background: var(--panel);
   border-radius: 24px;
@@ -211,7 +212,6 @@ select,
   align-items: center;
   border: 1.5px solid var(--border);
 }
-
 input, select {
   width: 100%;
   margin: 7px 0 13px 0;
@@ -228,11 +228,9 @@ input, select {
   transition: border 0.15s;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-
 input:focus, select:focus {
   border: 2px solid var(--accent);
 }
-
 button {
   width: 100%;
   padding: 13px 0;
