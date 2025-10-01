@@ -13,8 +13,118 @@
   --input-border: #353550;
 }
 
+/* Fondo Nyan Cat animado */
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  overflow-x: hidden;
+}
+#nyancat-bg {
+  position: fixed;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+#nyancat-gif {
+  position: absolute;
+  width: 140px;
+  height: auto;
+  top: 50%;
+  left: 0;
+  animation: nyancat-move 16s linear infinite;
+}
+@keyframes nyancat-move {
+  0% { left: -140px; top: 10%; }
+  25% { left: 30vw; top: 25%; }
+  50% { left: 70vw; top: 60%; }
+  75% { left: 90vw; top: 30%; }
+  100% { left: 110vw; top: 10%; }
+}
+
+/* Chat en la esquina */
+#chatBox {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 280px;
+  max-height: 360px;
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: 0 2px 18px #0007;
+  padding: 9px 9px 12px 9px;
+  display: flex;
+  flex-direction: column;
+  z-index: 4000;
+}
+#chatHeader {
+  font-weight: bold;
+  color: var(--accent);
+  font-size: 1.1em;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+#chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 0.97em;
+  margin-bottom: 7px;
+  max-height: 180px;
+}
+.chatMsg {
+  margin-bottom: 5px;
+  word-break: break-word;
+}
+.chatName {
+  color: var(--accent);
+  font-weight: bold;
+  margin-right: 6px;
+}
+.chatText {
+  color: var(--text-main);
+}
+#chatForm {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+#chatInput {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 2px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  outline: none;
+  font-size: 1em;
+}
+#chatInput:focus {
+  border: 2px solid var(--accent);
+}
+#chatForm button {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: var(--text-main);
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+#chatForm button:hover {
+  background: var(--accent-hover);
+}
+
 /* Usa Helvetica para todo el sitio */
-body, html {
+html {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -196,6 +306,10 @@ button:hover {
   margin: 5px 0;
   padding: 5px 0;
   letter-spacing: 1.5px;
+}
+#lobbyPlayers li.suggested {
+  color: #10d084 !important;
+  font-weight: bold;
 }
 #hostControls {
   margin-top: 5px;
