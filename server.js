@@ -71,13 +71,7 @@ io.on('connection', (socket) => {
     if (rooms[room].hostSocketId !== socket.id) return;
     const sala = rooms[room];
 
-    // SOLO USAR LOS NOMBRES SUGERIDOS POR LOS JUGADORES
-    const suggestionsArr = Object.values(sala.suggestions).filter(x => x && x.trim().length > 0);
-
-    // Si nadie sugirió nombre, el secreto es string vacío
-    const secret = suggestionsArr.length > 0 ? suggestionsArr[Math.floor(Math.random() * suggestionsArr.length)] : "";
-
-    // Asignar impostores (mínimo 1, máximo players-1)
+    // Asignar roles
     let playerCount = sala.players.length;
     let impostorCount = Math.max(1, Math.min(sala.impostors, playerCount - 1));
     let indices = Array.from(sala.players.keys()).sort(() => Math.random() - 0.5);
@@ -87,6 +81,16 @@ io.on('connection', (socket) => {
     sala.players.forEach((p, i) => {
       sala.roles[p.name] = impostorIndices.includes(i) ? 'impostor' : 'innocent';
     });
+
+    // SOLO USAR SUGERENCIAS DE INOCENTES PARA EL SECRETO
+    const innocentNames = sala.players.filter(p => sala.roles[p.name] === 'innocent').map(p => p.name);
+    const innocentSuggestions = innocentNames
+      .map(name => sala.suggestions[name])
+      .filter(x => x && x.trim().length > 0);
+    const secret = innocentSuggestions.length > 0
+      ? innocentSuggestions[Math.floor(Math.random() * innocentSuggestions.length)]
+      : "";
+
     sala.secret = secret;
     sala.eliminated = [];
     sala.votes = {};
@@ -137,19 +141,27 @@ io.on('connection', (socket) => {
       const vivos = sala.players
         .map(p => p.name)
         .filter(name => !sala.eliminated.includes(name));
-      io.in(room).emit("to_vote", vivos);
+      // Enviamos también info de eliminados para la votación
+      io.in(room).emit("to_vote", vivos, sala.eliminated);
+      // Enviamos votos en vivo (reset)
+      io.in(room).emit("votes_update", sala.votes, vivos.length);
     }
   });
 
   socket.on('vote', ({ target, room }) => {
     if (!rooms[room]) return;
     const sala = rooms[room];
+    // Si el jugador está eliminado, ignora el voto
+    if (sala.eliminated.includes(playerName)) return;
     if (!sala.votes[playerName]) {
       sala.votes[playerName] = target;
     }
     const vivos = sala.players
       .map(p => p.name)
       .filter(name => !sala.eliminated.includes(name));
+    // Enviamos votos en vivo
+    io.in(room).emit("votes_update", sala.votes, vivos.length);
+
     if (Object.keys(sala.votes).length >= vivos.length) {
       const votos = {};
       Object.values(sala.votes).forEach(targetName => {
@@ -168,12 +180,17 @@ io.on('connection', (socket) => {
       const eliminado = eliminados[0];
       sala.eliminated.push(eliminado);
 
+      // Mensaje en vivo anunciando a quién echaron
+      io.in(room).emit("player_eliminated", eliminado);
+
       const impostoresVivos = sala.players
         .map(p => p.name)
         .filter(name => sala.roles[name] === 'impostor' && !sala.eliminated.includes(name)).length;
       const inocentesVivos = sala.players
         .map(p => p.name)
         .filter(name => sala.roles[name] === 'innocent' && !sala.eliminated.includes(name)).length;
+
+      sala.votes = {};
 
       if (impostoresVivos === 0) {
         io.in(room).emit('show_results', {
@@ -186,8 +203,6 @@ io.on('connection', (socket) => {
           info: `Sobrevivieron los impostores.`
         });
       } else {
-        sala.votes = {};
-
         const vivosPlayers = sala.players
           .map(p => p.name)
           .filter(name => !sala.eliminated.includes(name));
