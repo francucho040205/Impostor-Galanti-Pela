@@ -13,6 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const rooms = {};
 const talkOrders = {};
 const talkIndexes = {};
+const chatHistory = {}; // NUEVO: historial de chat por sala
 
 function emitLobbyUpdate(room) {
   if (!rooms[room]) return;
@@ -21,7 +22,7 @@ function emitLobbyUpdate(room) {
     players: rooms[room].players.map(p => p.name),
     hostName: rooms[room].hostName,
     impostors: rooms[room].impostors,
-    suggestions: rooms[room].suggestions // Para color verde en el lobby
+    suggestions: rooms[room].suggestions
   });
 }
 
@@ -44,6 +45,7 @@ io.on('connection', (socket) => {
         votes: {},
         secret: null
       };
+      chatHistory[room] = [];
     }
     // Si ya existe, actualiza socketId
     let existing = rooms[room].players.find(p => p.name === name);
@@ -54,6 +56,11 @@ io.on('connection', (socket) => {
     }
     socket.join(room);
     emitLobbyUpdate(room);
+
+    // Enviar el historial de chat si existe
+    if (chatHistory[room]) {
+      socket.emit('chat_history', chatHistory[room]);
+    }
   });
 
   socket.on('set_impostors', ({ room, impostors }) => {
@@ -75,9 +82,10 @@ io.on('connection', (socket) => {
     if (rooms[room].hostSocketId !== socket.id) return;
     const sala = rooms[room];
 
-    // RESET DE ELIMINADOS Y VOTOS
+    // RESET DE ELIMINADOS, VOTOS Y CHAT
     sala.eliminated = [];
     sala.votes = {};
+    chatHistory[room] = [];
 
     // Asignar roles
     let playerCount = sala.players.length;
@@ -117,6 +125,8 @@ io.on('connection', (socket) => {
     talkIndexes[room] = 0;
 
     io.in(room).emit("start_talk", { order });
+    // Limpia el chat en todos los clientes (opcional)
+    io.in(room).emit('chat_history', []);
   });
 
   socket.on("done_talk", ({ room }) => {
@@ -138,7 +148,6 @@ io.on('connection', (socket) => {
   socket.on('vote', ({ target, room }) => {
     if (!rooms[room]) return;
     const sala = rooms[room];
-    // Si el jugador está eliminado, ignora el voto
     if (sala.eliminated.includes(playerName)) return;
     sala.votes[playerName] = target;
     const vivos = sala.players
@@ -147,7 +156,6 @@ io.on('connection', (socket) => {
     io.in(room).emit("votes_update", sala.votes, vivos.length, sala.eliminated, sala.roles);
 
     if (Object.keys(sala.votes).length >= vivos.length) {
-      // Conteo de votos
       const votos = {};
       Object.values(sala.votes).forEach(targetName => {
         if (!votos[targetName]) votos[targetName] = 0;
@@ -162,11 +170,9 @@ io.on('connection', (socket) => {
           eliminados.push(name);
         }
       }
-      // Empate: NO eliminar a nadie, mostrar mensaje especial
       if (eliminados.length > 1) {
         io.in(room).emit("vote_tie", eliminados);
         sala.votes = {};
-        // Nueva ronda de hablar con los mismos vivos
         const vivosPlayers = sala.players
           .map(p => p.name)
           .filter(name => !sala.eliminated.includes(name));
@@ -178,8 +184,6 @@ io.on('connection', (socket) => {
         }, 2300);
         return;
       }
-
-      // Eliminación normal
       const eliminado = eliminados[0];
       sala.eliminated.push(eliminado);
 
@@ -218,10 +222,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  // CHAT
+  // CHAT (guarda historial en la partida)
   socket.on('chat_message', ({ room, name, text }) => {
     if (room && name && text) {
-      io.in(room).emit('chat_message', { name, text });
+      if (!chatHistory[room]) chatHistory[room] = [];
+      const msgObj = { name, text };
+      chatHistory[room].push(msgObj);
+      io.in(room).emit('chat_message', msgObj);
     }
   });
 
@@ -230,6 +237,7 @@ io.on('connection', (socket) => {
     rooms[room].suggestions = {};
     rooms[room].eliminated = [];
     rooms[room].votes = {};
+    chatHistory[room] = [];
     io.in(room).emit('restart');
     emitLobbyUpdate(room);
     talkOrders[room] = undefined;
@@ -247,6 +255,7 @@ io.on('connection', (socket) => {
         }
         if (rooms[room].players.length === 0) {
           delete rooms[room];
+          delete chatHistory[room];
         } else {
           emitLobbyUpdate(room);
         }
