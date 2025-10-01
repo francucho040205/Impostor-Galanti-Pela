@@ -21,7 +21,7 @@ function emitLobbyUpdate(room) {
     players: rooms[room].players.map(p => p.name),
     hostName: rooms[room].hostName,
     impostors: rooms[room].impostors,
-    suggestions: rooms[room].suggestions // <--- agrega sugerencias para el lobby
+    suggestions: rooms[room].suggestions // Para color verde en el lobby
   });
 }
 
@@ -215,6 +215,13 @@ io.on('connection', (socket) => {
         talkIndexes[room] = 0;
         io.in(room).emit("start_talk", { order });
       }
+    }
+  });
+
+  // CHAT
+  socket.on('chat_message', ({ room, name, text }) => {
+    if (room && name && text) {
+      io.in(room).emit('chat_message', { name, text });
     }
   });
 
