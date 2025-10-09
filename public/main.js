@@ -59,6 +59,9 @@ const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
 const resultSecret = document.getElementById("resultSecret");
 
+// AUDIO FIN DE PARTIDA
+const audioFinPartida = document.getElementById("audioFinPartida");
+
 // CHAT
 const chatBox = document.getElementById("chatBox");
 const chatMessages = document.getElementById("chatMessages");
@@ -88,7 +91,7 @@ function ocultarTitulosInicio() {
   if (titleCreate) titleCreate.style.display = "none";
   if (subtitleJoin) subtitleJoin.style.display = "none";
   if (createRoomForm) createRoomForm.style.display = "none";
-  if (joinRoomForm) joinRoomForm.style.display = "none";
+  if (joinRoomForm) createRoomForm.style.display = "none";
 }
 function mostrarTitulosInicio() {
   if (titleCreate) titleCreate.style.display = "";
@@ -102,13 +105,11 @@ function showOnly(id) {
     createRoomForm, joinRoomForm, lobbyScreen, voteScreen, resultScreen, talkScreen
   ].forEach(el => el.style.display = "none");
   if (id) id.style.display = "flex";
-  // Oculta títulos si no estamos en la pantalla de inicio
   if (id === createRoomForm || id === joinRoomForm) {
     mostrarTitulosInicio();
     chatBox.style.display = "none";
   } else {
     ocultarTitulosInicio();
-    // Mostrar chat solo en partida/lobby (no en pantalla de inicio)
     chatBox.style.display = "";
   }
 }
@@ -372,6 +373,10 @@ confirmVoteBtn.onclick = function() {
 };
 
 socket.on("show_results", ({ title, info, image }) => {
+  if (audioFinPartida) {
+    audioFinPartida.currentTime = 0;
+    audioFinPartida.play().catch(()=>{});
+  }
   showOnly(resultScreen);
   resultTitle.innerHTML = image ? `<img src="${image}" style="max-width:420px;max-height:180px;margin-bottom:12px;border-radius:14px;"><br>${title}` : title;
   resultInfo.textContent = info;
