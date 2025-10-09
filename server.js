@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const rooms = {};
 const talkOrders = {};
 const talkIndexes = {};
-const chatHistory = {}; // Historial de chat por sala
+const chatHistory = {};
 
 function emitLobbyUpdate(room) {
   if (!rooms[room]) return;
@@ -144,6 +144,7 @@ io.on('connection', (socket) => {
     }
   });
 
+  // <<<<< VOTING EVENT FULLY CORRECTED >>>>>
   socket.on('vote', ({ target, room }) => {
     if (!rooms[room]) return;
     const sala = rooms[room];
@@ -155,6 +156,7 @@ io.on('connection', (socket) => {
     io.in(room).emit("votes_update", sala.votes, vivos.length, sala.eliminated, sala.roles);
 
     if (Object.keys(sala.votes).length >= vivos.length) {
+      // Conteo de votos
       const votos = {};
       Object.values(sala.votes).forEach(targetName => {
         if (!votos[targetName]) votos[targetName] = 0;
@@ -188,15 +190,17 @@ io.on('connection', (socket) => {
 
       io.in(room).emit("player_eliminated", eliminado);
 
+      // >>>>> CALCULAR VIVOS DESPUÉS DE ELIMINACIÓN <<<<<
       const impostoresVivos = sala.players
         .map(p => p.name)
         .filter(name => sala.roles[name] === 'impostor' && !sala.eliminated.includes(name)).length;
       const inocentesVivos = sala.players
         .map(p => p.name)
-        .filter(name => sala.roles[p.name] === 'innocent' && !sala.eliminated.includes(name)).length;
+        .filter(name => sala.roles[name] === 'innocent' && !sala.eliminated.includes(name)).length;
 
       sala.votes = {};
 
+      // >>>>> FIN DE PARTIDA <<<<<
       if (impostoresVivos === 0) {
         io.in(room).emit('show_results', {
           title: "¡Inocentes ganan!",
@@ -210,6 +214,7 @@ io.on('connection', (socket) => {
           image: "/img/victoria-impostores.jpg"
         });
       } else {
+        // Continúa el juego
         const vivosPlayers = sala.players
           .map(p => p.name)
           .filter(name => !sala.eliminated.includes(name));
