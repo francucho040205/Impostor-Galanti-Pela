@@ -90,6 +90,29 @@ body, html {
   100% { left: 110vw; top: 35%; }
 }
 
+/* TikTok hashtag CR7 ocupando todo el rectángulo a la derecha */
+#tiktok-right {
+  position: fixed;
+  top: 80px;
+  right: 18px;
+  width: 320px;
+  height: 550px;
+  z-index: 3000;
+  background: none;
+  padding: 0;
+  display: flex;
+}
+#tiktok-iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  box-shadow: 0 2px 24px #0008;
+  background: #181824;
+}
+@media (max-width: 900px) {
+  #tiktok-right { display: none; }
+}
+
 /* Cajas de juego y chat con z-index alto */
 .center-outer, .center-inner, .form-card, .lobby-card, #chatBox, .topbar {
   position: relative;
@@ -178,23 +201,6 @@ body, html {
 }
 #chatForm button:hover {
   background: #8922e6;
-}
-
-/* TikTok a la derecha */
-#tiktok-right {
-  position: fixed;
-  top: 80px;
-  right: 18px;
-  z-index: 3000;
-  background: none;
-  padding: 0;
-}
-#tiktok-right iframe {
-  box-shadow: 0 2px 24px #0008;
-  background: #181824;
-}
-@media (max-width: 900px) {
-  #tiktok-right { display: none; }
 }
 
 /* Topbar, títulos, subtítulos etc */
