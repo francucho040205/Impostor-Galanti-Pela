@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- FONDO ANIMADO CON VARIAS FOTOS REBOTANDO (con colisiones reales) -->
+  <!-- FONDO ANIMADO CON VARIAS FOTOS REBOTANDO -->
   <div id="nyancat-bg">
     <img src="/img/foto-fondo.jpg" id="foto-rebotando1" class="foto-rebotando" alt="Fondo animado 1" />
     <img src="/img/foto-fondo2.jpg" id="foto-rebotando2" class="foto-rebotando" alt="Fondo animado 2" />
@@ -106,83 +106,6 @@
   </div>
   <!-- AUDIO FIN DE PARTIDA -->
   <audio id="audioFinPartida" src="/audio/fin-partida.mp3"></audio>
-  <!-- Script para colisiones y rebote entre imágenes -->
-  <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const container = document.getElementById('nyancat-bg');
-    const images = Array.from(document.querySelectorAll('.foto-rebotando'));
-    const balls = images.map((img, i) => {
-      // Usamos el tamaño real de la imagen (una vez cargada) para colisión
-      const w = img.naturalWidth || 180;
-      const h = img.naturalHeight || 130;
-      return {
-        x: Math.random() * (window.innerWidth - w),
-        y: Math.random() * (window.innerHeight - h),
-        vx: (Math.random() * 2 + 1) * (Math.random() < 0.5 ? 1 : -1),
-        vy: (Math.random() * 2 + 1) * (Math.random() < 0.5 ? 1 : -1),
-        w: w,
-        h: h,
-        img: img
-      };
-    });
-
-    function rectsCollide(a, b) {
-      return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-      );
-    }
-
-    function resolveCollision(a, b) {
-      // Rebote simple: intercambia velocidades
-      const tmpVx = a.vx;
-      const tmpVy = a.vy;
-      a.vx = b.vx;
-      a.vy = b.vy;
-      b.vx = tmpVx;
-      b.vy = tmpVy;
-      // Mueve uno un poco para evitar que se queden pegados
-      a.x += a.vx;
-      a.y += a.vy;
-      b.x += b.vx;
-      b.y += b.vy;
-    }
-
-    function updatePhysics() {
-      const W = window.innerWidth, H = window.innerHeight;
-      for (let i = 0; i < balls.length; i++) {
-        for (let j = i + 1; j < balls.length; j++) {
-          let a = balls[i], b = balls[j];
-          if (rectsCollide(a, b)) {
-            resolveCollision(a, b);
-          }
-        }
-      }
-      for (let ball of balls) {
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-
-        // Colisión con bordes
-        if (ball.x < 0) { ball.x = 0; ball.vx *= -1; }
-        if (ball.x > W - ball.w) { ball.x = W - ball.w; ball.vx *= -1; }
-        if (ball.y < 0) { ball.y = 0; ball.vy *= -1; }
-        if (ball.y > H - ball.h) { ball.y = H - ball.h; ball.vy *= -1; }
-
-        ball.img.style.left = ball.x + "px";
-        ball.img.style.top = ball.y + "px";
-      }
-      requestAnimationFrame(updatePhysics);
-    }
-
-    window.addEventListener("resize", () => {
-      // Las imágenes siguen rebotando y colisionando en el nuevo tamaño
-    });
-
-    updatePhysics();
-  });
-  </script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
 </body>
