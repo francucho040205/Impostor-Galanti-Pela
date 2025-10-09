@@ -57,6 +57,7 @@ const resultScreen = document.getElementById("resultScreen");
 const resultTitle = document.getElementById("resultTitle");
 const resultInfo = document.getElementById("resultInfo");
 const playAgainBtn = document.getElementById("playAgainBtn");
+const resultSecret = document.getElementById("resultSecret");
 
 // CHAT
 const chatBox = document.getElementById("chatBox");
@@ -71,6 +72,7 @@ let totalVoters = 0;
 let rolesForVotes = {};
 let fueEliminadoEstaPartida = false;
 let secretSuggestions = {};
+let chatHistorial = [];
 
 let isHost = false;
 let myRoom = "";
@@ -103,8 +105,11 @@ function showOnly(id) {
   // Oculta títulos si no estamos en la pantalla de inicio
   if (id === createRoomForm || id === joinRoomForm) {
     mostrarTitulosInicio();
+    chatBox.style.display = "none";
   } else {
     ocultarTitulosInicio();
+    // Mostrar chat solo en partida/lobby (no en pantalla de inicio)
+    chatBox.style.display = "";
   }
 }
 
@@ -370,6 +375,7 @@ socket.on("show_results", ({ title, info, image }) => {
   showOnly(resultScreen);
   resultTitle.innerHTML = image ? `<img src="${image}" style="max-width:420px;max-height:180px;margin-bottom:12px;border-radius:14px;"><br>${title}` : title;
   resultInfo.textContent = info;
+  resultSecret.textContent = secretWord ? `Palabra secreta: "${secretWord}"` : "";
 });
 
 playAgainBtn.onclick = () => {
@@ -386,6 +392,8 @@ socket.on("restart", () => {
   totalVoters = 0;
   rolesForVotes = {};
   fueEliminadoEstaPartida = false;
+  chatHistorial = [];
+  chatMessages.innerHTML = "";
 });
 
 // --- CHAT ---
@@ -398,6 +406,10 @@ chatForm.addEventListener("submit", function(e) {
 });
 socket.on("chat_message", ({ name, text }) => {
   addChatMsg(name, text);
+});
+socket.on("chat_history", arr => {
+  chatMessages.innerHTML = "";
+  arr.forEach(obj => addChatMsg(obj.name, obj.text));
 });
 function addChatMsg(name, text) {
   const div = document.createElement("div");
