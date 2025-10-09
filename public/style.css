@@ -46,6 +46,7 @@ body, html {
 #foto-rebotando2 { animation: foto-rebote2 21s linear infinite; }
 #foto-rebotando3 { animation: foto-rebote3 13s linear infinite; }
 #foto-rebotando4 { animation: foto-rebote4 18s linear infinite; }
+#foto-rebotando5 { animation: foto-rebote5 17s linear infinite; }
 
 @keyframes foto-rebote1 {
   0%   { left: -180px; top: 10%; }
@@ -79,6 +80,14 @@ body, html {
   60%  { left: 90vw; top: 22%; }
   80%  { left: 60vw; top: 53%; }
   100% { left: 110vw; top: 25%; }
+}
+@keyframes foto-rebote5 {
+  0%   { left: -180px; top: 35%; }
+  18%  { left: 25vw; top: 65%; }
+  38%  { left: 60vw; top: 28%; }
+  59%  { left: 85vw; top: 73%; }
+  80%  { left: 55vw; top: 15%; }
+  100% { left: 110vw; top: 35%; }
 }
 
 /* Cajas de juego y chat con z-index alto */
@@ -169,6 +178,23 @@ body, html {
 }
 #chatForm button:hover {
   background: #8922e6;
+}
+
+/* TikTok a la derecha */
+#tiktok-right {
+  position: fixed;
+  top: 80px;
+  right: 18px;
+  z-index: 3000;
+  background: none;
+  padding: 0;
+}
+#tiktok-right iframe {
+  box-shadow: 0 2px 24px #0008;
+  background: #181824;
+}
+@media (max-width: 900px) {
+  #tiktok-right { display: none; }
 }
 
 /* Topbar, títulos, subtítulos etc */
