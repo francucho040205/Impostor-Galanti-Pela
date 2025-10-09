@@ -2,13 +2,16 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>¡Galanti esta cada día más pelado!</title>
+  <title>¿Quién es el impostor? - Online</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- FONDO ANIMADO CON FOTO REBOTANDO -->
+  <!-- FONDO ANIMADO CON VARIAS FOTOS REBOTANDO -->
   <div id="nyancat-bg">
-    <img src="/img/foto-fondo.jpg" id="foto-rebotando" alt="Fondo animado" />
+    <img src="/img/foto-fondo.jpg" id="foto-rebotando1" class="foto-rebotando" alt="Fondo animado 1" />
+    <img src="/img/foto-fondo2.jpg" id="foto-rebotando2" class="foto-rebotando" alt="Fondo animado 2" />
+    <img src="/img/foto-fondo3.jpg" id="foto-rebotando3" class="foto-rebotando" alt="Fondo animado 3" />
+    <img src="/img/foto-fondo4.jpg" id="foto-rebotando4" class="foto-rebotando" alt="Fondo animado 4" />
   </div>
   <div class="topbar">
     <span>Dev by Cancer Team</span>
@@ -16,16 +19,17 @@
   </div>
   <div class="center-outer">
     <div class="center-inner" id="app">
-      <!-- CREA SALA / UNIRSE - Nuevo layout -->
       <h1 class="section-title" id="titleCreate">Crea una sala</h1>
-      <h2 class="section-subtitle" id="subtitleJoin" style="margin-bottom:32px;">O unite a una con un código</h2>
-      <div style="display: flex; flex-direction: column; align-items: center; gap:32px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;">
         <form class="form-card" id="createRoomForm" autocomplete="off" style="margin-bottom:0;">
           <input id="hostNameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
           <button id="createRoomFinalBtn" type="submit" style="background:#43a047; color:#fff; margin-top:16px;">
             🚀 Crear sala
           </button>
         </form>
+        <h2 class="section-subtitle" id="subtitleJoin" style="margin-bottom:0;margin-top:0;">
+          O unite a una con un código
+        </h2>
         <form class="form-card" id="joinRoomForm" autocomplete="off" style="margin-bottom:0;">
           <input id="roomInput" type="text" placeholder="Código de sala" maxlength="8" required>
           <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="20" required>
@@ -83,6 +87,7 @@
       <div id="resultScreen" style="display:none;">
         <div class="form-card">
           <h2 id="resultTitle"></h2>
+          <div id="resultSecret" style="font-size:1.25em;color:#10d084;margin-bottom:10px;"></div>
           <p id="resultInfo"></p>
           <button id="playAgainBtn">Jugar de nuevo</button>
         </div>
