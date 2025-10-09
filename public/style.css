@@ -26,7 +26,7 @@ body, html {
   overflow-x: hidden;
 }
 
-/* Fondo animado con la foto rebotando por detrás */
+/* Fondo animado con varias fotos */
 #nyancat-bg {
   position: fixed;
   z-index: 0;
@@ -35,27 +35,53 @@ body, html {
   overflow: hidden;
   pointer-events: none;
 }
-#foto-rebotando {
+.foto-rebotando {
   position: absolute;
   width: 180px;
   height: auto;
-  top: 50%;
-  left: 0;
-  animation: foto-rebote 15s linear infinite;
   border-radius: 18px;
   box-shadow: 0 3px 24px #0007;
 }
-@keyframes foto-rebote {
-  0% { left: -180px; top: 8%; }
-  20% { left: 20vw; top: 16%; }
-  35% { left: 45vw; top: 82%; }
-  50% { left: 75vw; top: 44%; }
-  70% { left: 92vw; top: 60%; }
-  85% { left: 65vw; top: 15%; }
-  100% { left: 110vw; top: 8%; }
+#foto-rebotando1 { animation: foto-rebote1 15s linear infinite; }
+#foto-rebotando2 { animation: foto-rebote2 21s linear infinite; }
+#foto-rebotando3 { animation: foto-rebote3 13s linear infinite; }
+#foto-rebotando4 { animation: foto-rebote4 18s linear infinite; }
+
+@keyframes foto-rebote1 {
+  0%   { left: -180px; top: 10%; }
+  20%  { left: 30vw; top: 18%; }
+  40%  { left: 55vw; top: 79%; }
+  55%  { left: 80vw; top: 43%; }
+  75%  { left: 94vw; top: 66%; }
+  85%  { left: 69vw; top: 15%; }
+  100% { left: 110vw; top: 10%; }
+}
+@keyframes foto-rebote2 {
+  0%   { left: -180px; top: 80%; }
+  18%  { left: 22vw; top: 66%; }
+  44%  { left: 67vw; top: 11%; }
+  65%  { left: 80vw; top: 42%; }
+  85%  { left: 50vw; top: 87%; }
+  100% { left: 110vw; top: 80%; }
+}
+@keyframes foto-rebote3 {
+  0%   { left: -180px; top: 55%; }
+  25%  { left: 35vw; top: 73%; }
+  49%  { left: 70vw; top: 15%; }
+  71%  { left: 93vw; top: 35%; }
+  82%  { left: 61vw; top: 65%; }
+  100% { left: 110vw; top: 55%; }
+}
+@keyframes foto-rebote4 {
+  0%   { left: -180px; top: 25%; }
+  20%  { left: 25vw; top: 29%; }
+  40%  { left: 73vw; top: 77%; }
+  60%  { left: 90vw; top: 22%; }
+  80%  { left: 60vw; top: 53%; }
+  100% { left: 110vw; top: 25%; }
 }
 
-/* Cajas de juego con z-index alto para que la foto pase por atrás */
+/* Cajas de juego y chat con z-index alto */
 .center-outer, .center-inner, .form-card, .lobby-card, #chatBox, .topbar {
   position: relative;
   z-index: 2;
